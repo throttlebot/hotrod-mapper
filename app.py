@@ -6,13 +6,22 @@ import random
 app = Flask(__name__)
 root = "http://storage.googleapis.com/hotrod-kelda/graphs/"
 
-@app.route('/map')
+@app.route('/map/location')
 def server_map():
     g = download_json_graph(root + "graph-{}.json".format(random.randint(0, 99)))
     color_shortest(g)
     buf = BytesIO()
     save_to_buf(g, buf)
     return send_file(buf, mimetype="image/png")
+
+@app.route('/map/route')
+def server_map():
+    g = download_json_graph(root + "graph-{}.json".format(random.randint(0, 99)))
+    color_shortest(g)
+    buf = BytesIO()
+    save_to_buf(g, buf)
+    return send_file(buf, mimetype="image/png")
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8084)
