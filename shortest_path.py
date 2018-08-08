@@ -1,5 +1,6 @@
 import networkx as nx
 import sys, time, json, math
+from multiprocessing.pool import ThreadPool
 
 def shortest_path(g, s, e):
     print("Start {}. End: {}".format(s, e))
@@ -8,9 +9,9 @@ def shortest_path(g, s, e):
     closedSet = {}
     openSet = {n: True for n in g.nodes()}
     cameFrom = {}
-    gScore = {n: sys.maxint for n in g.nodes()}
+    gScore = {n: sys.maxsize for n in g.nodes()}
     gScore[s] = 0
-    fScore = {n: sys.maxint for n in g.nodes()}
+    fScore = {n: sys.maxsize for n in g.nodes()}
     nodes = g.nodes(data=True)
     fScore[s] = heuristic(nodes[s], nodes[e])
 
@@ -53,16 +54,45 @@ def neighbor(g, n, nodes):
         nodes = g.nodes(data=True)
     return g.neighbors(n), g, nodes
 
-def download_and_merge(g, gid):
-    new_g = download(gid)
-    new_ret = nx.compose(g, new_g)
+def download_all(gids):
+    assert len(gids) > 0
+
+    def work(gid):
+        g = download(gid)
+        return g.nodes(data=True), g.edges(data=True)
+
+    pool = ThreadPool(4)
+    output = pool.map(work, gids)
+
+    g = nx.Graph()
+    g.add_nodes_from([item for sublist in output for item in sublist[0]])
+    g.add_edges_from([item for sublist in output for item in sublist[1]])
+    process_edges(g)
+    return g
+
+def process_edges(g):
     for n in g.nodes(data=True):
         if n[1]["edge"]:
             for e in n[1]["edge_list"]:
-                if e["neighbor"] in new_ret.nodes:
-                    if new_ret.node[e["neighbor"]]["level"] == 3 or n[1]["level"] == 3:
+                if e["neighbor"] in g.nodes:
+                    if g.node[e["neighbor"]]["level"] == 3 or n[1]["level"] == 3:
+                        g.add_edge(e["neighbor"], n[0], weight=3)
+                    elif g.node[e["neighbor"]]["level"] == 2 or n[1]["level"] == 2:
+                        g.add_edge(e["neighbor"], n[0], weight=2)
+                    else:
+                        g.add_edge(e["neighbor"], n[0], weight=1)
+    return g
+
+def download_and_merge(g, gid):
+    new_g = download(gid)
+    new_ret = nx.compose(g, new_g)
+    for n in new_g.nodes(data=True):
+        if n[1]["edge"]:
+            for e in n[1]["edge_list"]:
+                if e["neighbor"] in g.nodes:
+                    if g.node[e["neighbor"]]["level"] == 3 or n[1]["level"] == 3:
                         new_ret.add_edge(e["neighbor"], n[0], weight=3)
-                    elif new_ret.node[e["neighbor"]]["level"] == 2 or n[1]["level"] == 2:
+                    elif g.node[e["neighbor"]]["level"] == 2 or n[1]["level"] == 2:
                         new_ret.add_edge(e["neighbor"], n[0], weight=2)
                     else:
                         new_ret.add_edge(e["neighbor"], n[0], weight=1)

@@ -5,7 +5,7 @@ from multiprocessing import Pool
 import sys
 
 import matplotlib
-# matplotlib.use('Agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 def new_square(id, size=100):
@@ -27,6 +27,9 @@ def new_square(id, size=100):
         if n_id + size < (id + 1) * size * size:
             G.add_edge(n_id, n_id + size, weight=1)
 
+    return G
+
+def congest(G, size=100):
     # populate congestion
     congestion_points = range(size*size)
     random.shuffle(congestion_points)
@@ -91,40 +94,43 @@ def color_shortest_test():
     start = random.choice([n for n in g1.nodes()])
     end = random.choice([n for n in g2.nodes()])
 
-    g, path = shortest_path(g, start, end)
+    g = download_and_merge(download(0), 399)
+
+    g, path = shortest_path(g, 0, 200 * 200 - 1)
     g.add_path(path, color="blue")
     g.add_nodes_from(path, color="blue")
     draw_graph(g)
 
-def draw_graph(g):
+def draw_graph(g, labels=False):
     node_pos = {n[0]: (n[1]["x"], n[1]["y"]) for n in g.nodes(data=True)}
     node_color_map = [n[1]["color"] if "color" in n[1] else color_by_level(n[1]["level"]) for n in g.nodes(data=True)]
     edge_color_map = [e[2]["color"] if "color" in e[2] else color_by_level(e[2]["weight"]) for e in g.edges(data=True)]
     nx.draw(g, pos=node_pos, node_size=10, node_color=node_color_map, edge_color=edge_color_map,
-            with_labels=False, font_size=8)
+            with_labels=labels, font_size=8)
     plt.show()
 
-def in_range(node, graph_id, size=10):
+def in_range(node, graph_id, size=10, interval_per_square=1):
     x = node[1]["x"]
     y = node[1]["y"]
 
-    lx = graph_id % size
-    ly = graph_id // size
+    lx = (graph_id % size) * interval_per_square
+    ly = (graph_id // size) * interval_per_square
 
-    tx = lx + 1
-    ty = ly + 1
+    tx = lx + interval_per_square
+    ty = ly + interval_per_square
 
     return x >= lx and x < tx and y >= ly and y < ty
 
-
-def split_graph(G, size=100):
+def split_graph(G, squares_per_side=100, interval=1):
+    total_nodes = len(G)
     graphs = []
     missed_connections = []
     node_to_id = {}
-    for id in range(size):
+    for id in range(squares_per_side * squares_per_side):
         print(id)
         g = nx.Graph()
-        g.add_nodes_from([n for n in G.nodes(data=True) if in_range(n, id, math.sqrt(size))])
+        g.add_nodes_from([n for n in G.nodes(data=True) if in_range(n, id, squares_per_side, interval)])
+        G.add_nodes_from([n for n in G.nodes(data=True) if in_range(n, id, squares_per_side, interval)], color="blue")
         for n in g.nodes():
             node_to_id[n] = id
         for e in G.edges(data=True):
@@ -134,9 +140,9 @@ def split_graph(G, size=100):
                 missed_connections.append(e)
         graphs.append(g)
 
-    assert sum([len(g) for g in graphs]) == len(G)
-
-    for g in graphs:
+    for id in range(squares_per_side * squares_per_side):
+        print(id)
+        g = graphs[id]
         for n in g.nodes():
             if len([_ for _ in g.neighbors(n)]) < 4:
                 edge_list = []
@@ -152,11 +158,7 @@ def split_graph(G, size=100):
             else:
                 g.add_node(n, edge=False)
 
-    for gid in range(0, size):
-        save_graph(graphs[gid], gid)
     return graphs
-
-
 
 def graph_to_json(graph):
     return json.dumps(nx.node_link_data(graph))
@@ -175,8 +177,14 @@ def download_json_graph(path):
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == "graph":
         g = new_square(0, 200)
+        g = congest(g, 200)
         draw_graph(g)
-        splits = split_graph(g, 400)
+        splits = split_graph(g, 20)
+        for gid in range(0, 400):
+            save_graph(splits[gid], gid)
+        splits_low_res = split_graph(g, 5, 4)
+        for gid in range(0, 25):
+            save_graph(splits_low_res[gid], "low-res-{}".format(gid))
     else:
         color_shortest_test()
 
