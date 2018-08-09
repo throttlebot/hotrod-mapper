@@ -1,8 +1,7 @@
-from flask import Flask, request
+from flask import Flask, Response, request
 from mapper import display, route
 from graph import graph_to_json
-from io import BytesIO
-import random
+
 
 app = Flask(__name__)
 root = "http://storage.googleapis.com/hotrod-kelda/graphs/"
@@ -15,7 +14,11 @@ def location():
     w = float(request.args.get('w'))
 
     g = display(x, y, z, w)
-    return graph_to_json(g)
+
+    resp = Response(graph_to_json(g))
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
+
 
 @app.route('/map/route', methods=['GET'])
 def find_route():
@@ -25,7 +28,10 @@ def find_route():
     w = float(request.args.get('w'))
 
     g = route(x, y, z, w)
-    return graph_to_json(g)
+
+    resp = Response(graph_to_json(g))
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8084)

@@ -14,6 +14,7 @@ def closest_node(x, y):
     for n in g.nodes(data=True):
         z = n[1]["x"]
         w = n[1]["y"]
+
         d = dist(x, y, z, w)
         closest.append((n[0], d))
     closest = sorted(closest, key=lambda x: x[1])

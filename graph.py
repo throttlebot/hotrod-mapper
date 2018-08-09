@@ -161,6 +161,8 @@ def split_graph(G, squares_per_side=100, interval=1):
     return graphs
 
 def graph_to_json(graph):
+
+
     return json.dumps(nx.node_link_data(graph))
 
 def save_graph(g, gid):
