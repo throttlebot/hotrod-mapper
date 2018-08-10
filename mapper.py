@@ -8,7 +8,15 @@ def parent_square(x, y):
     return int(fy * 20 + fx)
 
 def closest_node(x, y):
-    ps = parent_square(x, y)
+    if x >= 20:
+        xs = 19
+    else:
+        xs = x
+    if y >= 20:
+        ys = 19
+    else:
+        ys = y
+    ps = parent_square(xs, ys)
     g = download(ps)
     closest = []
     for n in g.nodes(data=True):
@@ -31,16 +39,16 @@ def display(x, y, z, w):
     assert w >= 0
 
     squares = []
-    for y_axis in range(int(min(y, w)), int(math.ceil(max(y, w)))):
-        for x_axis in range(int(min(x, z)), int(math.ceil(max(x, z)))):
-            squares.append(parent_square(x_axis, y_axis))
+    for y_axis in range(int(min(y, w)), int(math.ceil(max(y, w) + 0.01))):
+        for x_axis in range(int(min(x, z)), int(math.ceil(max(x, z) + 0.01))):
+            if x_axis < 20 and y_axis < 20:
+                squares.append(parent_square(x_axis, y_axis))
 
     g = download_all(squares)
     return g
 
-
 def route(x, y, z, w):
-    g = display(x, y, z, w)
+    g = nx.Graph()
     start_sqaure, start_node = closest_node(x, y)
     end_square, end_node = closest_node(z, w)
 
@@ -48,8 +56,7 @@ def route(x, y, z, w):
     process_edges(route_graph)
     _, path = shortest_path(route_graph, start_node, end_node)
     g.add_path(path, color="blue")
-    g.add_nodes_from(path, color="blue")
     return g
 
 if __name__ == '__main__':
-    draw_graph(route(10.2323, 15.3432, 19.61231, 19.2393), labels=False)
+    draw_graph(route(0, 0, 20, 20), labels=False)

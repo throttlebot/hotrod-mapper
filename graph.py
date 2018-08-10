@@ -102,7 +102,7 @@ def color_shortest_test():
     draw_graph(g)
 
 def draw_graph(g, labels=False):
-    node_pos = {n[0]: (n[1]["x"], n[1]["y"]) for n in g.nodes(data=True)}
+    node_pos = {n[0]: (n[1]["x"], n[1]["y"]) if ("x" in n[1] and "y" in n[1]) else (0, 0) for n in g.nodes(data=True)}
     node_color_map = [n[1]["color"] if "color" in n[1] else color_by_level(n[1]["level"]) for n in g.nodes(data=True)]
     edge_color_map = [e[2]["color"] if "color" in e[2] else color_by_level(e[2]["weight"]) for e in g.edges(data=True)]
     nx.draw(g, pos=node_pos, node_size=10, node_color=node_color_map, edge_color=edge_color_map,

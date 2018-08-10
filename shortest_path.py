@@ -1,6 +1,8 @@
 import networkx as nx
-import sys, time, json, math
+import sys, time, json, requests
 from multiprocessing.pool import ThreadPool
+
+root = "http://storage.googleapis.com/hotrod-kelda/graph/"
 
 def shortest_path(g, s, e):
     print("Start {}. End: {}".format(s, e))
@@ -99,10 +101,12 @@ def download_and_merge(g, gid):
     return new_ret
 
 def download(gid):
-    f = open("graph/graph-{}.json".format(gid), "r")
-    data = f.read()
-    f.close()
-    return nx.node_link_graph(json.loads(data))
+    # f = open("graph/graph-{}.json".format(gid), "r")
+    # data = f.read()
+    # f.close()
+
+    data = json.loads(requests.get(root + "graph-{}.json".format(gid)).content)
+    return nx.node_link_graph(data)
 
 def reconstruct_path(cameFrom, current):
     total_path = [current]
