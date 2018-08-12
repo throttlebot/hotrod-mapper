@@ -1,33 +1,16 @@
 from flask import Flask, Response, request
-from mapper import display, route
 from graph import graph_to_json
+from shortest_path import download
+import random
 
 
 app = Flask(__name__)
-root = "http://storage.googleapis.com/hotrod-kelda/graphs/"
 
 @app.route('/map/location', methods=['GET'])
 def location():
-    x = float(request.args.get('x'))
-    y = float(request.args.get('y'))
-    z = float(request.args.get('z'))
-    w = float(request.args.get('w'))
+    r = random.randint(0, 400)
 
-    g = display(x, y, z, w)
-
-    resp = Response(graph_to_json(g))
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
-
-
-@app.route('/map/route', methods=['GET'])
-def find_route():
-    x = float(request.args.get('x'))
-    y = float(request.args.get('y'))
-    z = float(request.args.get('z'))
-    w = float(request.args.get('w'))
-
-    g = route(x, y, z, w)
+    g = download(r)
 
     resp = Response(graph_to_json(g))
     resp.headers['Access-Control-Allow-Origin'] = '*'
