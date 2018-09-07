@@ -127,7 +127,6 @@ def split_graph(G, squares_per_side=100, interval=1):
     missed_connections = []
     node_to_id = {}
     for id in range(squares_per_side * squares_per_side):
-        print(id)
         g = nx.Graph()
         g.add_nodes_from([n for n in G.nodes(data=True) if in_range(n, id, squares_per_side, interval)])
         G.add_nodes_from([n for n in G.nodes(data=True) if in_range(n, id, squares_per_side, interval)], color="blue")
@@ -141,7 +140,6 @@ def split_graph(G, squares_per_side=100, interval=1):
         graphs.append(g)
 
     for id in range(squares_per_side * squares_per_side):
-        print(id)
         g = graphs[id]
         for n in g.nodes():
             if len([_ for _ in g.neighbors(n)]) < 4:
@@ -170,7 +168,6 @@ def save_graph(g, gid):
     f = open("graph/graph-{}.json".format(gid), "w")
     f.write(json_data)
     f.close()
-    print("Created graph", gid)
 
 def download_json_graph(path):
     json_data = json.loads(requests.get(path).content)

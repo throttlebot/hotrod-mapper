@@ -5,7 +5,6 @@ from multiprocessing.pool import ThreadPool
 root = "http://storage.googleapis.com/hotrod-kelda/graph/"
 
 def shortest_path(g, s, e):
-    print("Start {}. End: {}".format(s, e))
     t = time.clock()
 
     closedSet = {}
@@ -20,10 +19,7 @@ def shortest_path(g, s, e):
     while len(openSet):
         current = smallest(openSet, fScore)
         if current == e:
-            print("Time Taken: {}".format(time.clock() - t))
-            print("Distance: {}".format(gScore[current]))
             path = reconstruct_path(cameFrom, current)
-            print("Path: {}".format(path))
             return g, reconstruct_path(cameFrom, current)
         openSet.pop(current)
         closedSet[current] = True
