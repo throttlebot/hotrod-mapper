@@ -5,4 +5,4 @@ RUN pip install -r requirements.txt
 
 COPY *.py ./
 
-ENTRYPOINT ["python3", "app.py"]
+ENTRYPOINT ["python3", "app.py", ">", "/dev/nulll"]
