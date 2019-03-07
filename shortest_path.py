@@ -1,8 +1,8 @@
 import networkx as nx
-import sys, time, json, requests
+import sys, time, json, requests, os
 from multiprocessing.pool import ThreadPool
 
-root = "http://storage.googleapis.com/hotrod-kelda/graph/"
+root = os.environ['BUCKET_ROOT']
 
 def shortest_path(g, s, e):
     print("Start {}. End: {}".format(s, e))

@@ -11,7 +11,7 @@ spec:
   # an external load-balanced IP for the route service.
   ports:
   - name: http-hotrod-mapper
-    port: 8084
+    port: 80
   type: ClusterIP
   selector:
     appName: hotrod-mapper
@@ -37,11 +37,13 @@ spec:
     spec:
       containers:
       - name: hotrod-route
-        image: index.docker.io/willwangkelda/hotrod-mapper
+        image: index.docker.io/hantaowang/hotrod-mapper:log
         imagePullPolicy: Always
         command: ["python3", "app.py"]
         env:
         - name: GET_HOSTS_FROM
           value: dns
+        - name: BUCKET_ROOT
+          value: 'http://s3-us-west-1.amazonaws.com/hotrod-app/graph/'
         ports:
-        - containerPort: 8084
+        - containerPort: 80
